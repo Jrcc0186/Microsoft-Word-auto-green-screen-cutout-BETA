@@ -1,0 +1,41 @@
+import cv2
+import numpy as np
+from PIL import Image
+
+def crop_green_screen(image_path, output_path):
+    # Load the image
+    image = cv2.imread(image_path)
+
+    # Convert image to HSV color space
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    # Define range of green color in HSV
+    lower_green = np.array([40, 40, 40])
+    upper_green = np.array([70, 255, 255])
+
+    # Threshold the HSV image to get only green colors
+    mask = cv2.inRange(hsv, lower_green, upper_green)
+
+    # Invert the mask
+    mask = cv2.bitwise_not(mask)
+
+    # Bitwise-AND mask and original image
+    result = cv2.bitwise_and(image, image, mask=mask)
+
+    # Convert result to PIL image
+    result_pil = Image.fromarray(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
+
+    # Crop the image
+    bbox = result_pil.getbbox()
+    cropped_image = result_pil.crop(bbox)
+
+    # Save the cropped image
+    cropped_image.save(output_path)
+
+    print("Cropped image saved successfully!")
+
+
+# Example usage:
+input_image_path = "input_image.jpg"
+output_image_path = "output_image_cropped.png"
+crop_green_screen(input_image_path, output_image_path)
